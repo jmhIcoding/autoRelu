@@ -1,0 +1,11 @@
+*.opendb
+*.db
+*.obj
+*.log
+*.exe
+*.pdb
+*.msi
+*.sdf
+*.idb
+vsrc/vsrc/Debug/
+vsrc/.vs/vsrc/v15/ipch/
