@@ -3,7 +3,7 @@
 #include "BaseTool.h"
 #include "relu_reduction.h"
 #include "SuffixSearch.h"
-#define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\8080\\"
+#define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\80\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -168,8 +168,8 @@ int main()
 	sprintf(PCAPDIR_, "%s\\*", PCAPDIR);
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
-	SuffixSearch search(0.5);
-	for (int i = 0; i < files.size(); i++)
+	SuffixSearch search(0.1);
+	for (int i = 0; i <min(100, files.size()); i++)
 	{
 		char pcapname[256] = { 0 };
 		freopen("CON", "w", stdout);

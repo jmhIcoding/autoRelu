@@ -26,21 +26,21 @@ void da( unsigned int *r,   int *sa, int n, int m, unsigned int *wa, unsigned in
 	for (i = 0; i<m; i++) ws[i] = 0;
 	for (i = 0; i < n; i++)
 	{
-		if (r[i] > 1200)
-		{
-			__asm
-			{
-				int 0x3;
-			}
-		}
+		//if (r[i] > 1200)
+		//{
+		//	__asm
+		//	{
+		//		int 0x3;
+		//	}
+		//}
 		ws[x[i] = r[i]]++;
-		if (x[i] > 1200)
-		{
-			__asm
-			{
-				int 0x3;
-			}
-		}
+		//if (x[i] > 1200)
+		//{
+		//	__asm
+		//	{
+		//		int 0x3;
+		//	}
+		//}
 	}
 	for (i = 1; i<m; i++) ws[i] += ws[i - 1];
 	for (i = n - 1; i >= 0; i--) sa[--ws[x[i]]] = i;
@@ -156,10 +156,11 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 			}
 			if (substr == 0)
 			{
-				pattern_strs.insert(string(tmpStr));
+			
+				pattern_strs.insert(string(tmpStr,tlen));
 				pattern_start.insert(sa[i]);
 				printf("%s", tmpStr);
-				printf("\n");
+				printf("\n===========================================\n");
 			}
 		}
 		i = j;
