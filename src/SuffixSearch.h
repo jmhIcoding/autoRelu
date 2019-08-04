@@ -100,7 +100,7 @@ int check(int tlen,char  *flag,  int *height,  int *cate,  int *sa,int len,int n
 	return 0;
 }
 
-void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold, unsigned int *a ,set< string > &pattern_strs)
+void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold, unsigned int *a ,set< string > &pattern_strs,set< int> & pattern_start)
 {
 	if (tlen == 0)
 	{
@@ -118,6 +118,12 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 		j = i;
 		while (height[j] >= tlen && j <= len)
 			j++;
+
+		if (pattern_start.find(sa[i]) != pattern_start.end())
+		{
+			i = j;
+			continue;
+		}
 		//if (j - i + 2 <= n / 2)
 		//{
 		//	i = j;
@@ -132,11 +138,13 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 			cnt += flag[k];
 		if (cnt>threshold)
 		{
+
 			for (k = 0; k<tlen; k++)
 				tmpStr[k] = a[sa[i] + k];
 			tmpStr[tlen] = 0;
 			char substr = 0;
-			for (auto it = pattern_strs.begin(); it != pattern_strs.end(); it++)
+
+			for (auto it = pattern_strs.begin(); it != pattern_strs.end() ; it++)
 			{
 				if (it->find(tmpStr, 0, tlen) != string::npos)
 				{
@@ -147,6 +155,7 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 			if (substr == 0)
 			{
 				pattern_strs.insert(string(tmpStr));
+				pattern_start.insert(sa[i]);
 				printf("%s", tmpStr);
 				printf("\n");
 			}
@@ -168,6 +177,7 @@ public:
 		allocate = maxn;
 		used = 0;	
 		pattern_str.clear();
+		pattern_start.clear();
 	}
 	~SuffixSearch()
 	{
@@ -280,7 +290,7 @@ private:
 		for (; ans > 10; ans--)
 		{
 			//printf("%d.....\n", ans);//...
-			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str);
+			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str,pattern_start);
 		}
 
 	}
@@ -305,6 +315,7 @@ private:
 	int used;
 private:
 	set<string> pattern_str;
+	set<int> pattern_start;
 };
 
 #endif
