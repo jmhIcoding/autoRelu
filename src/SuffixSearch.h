@@ -113,6 +113,7 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 	{
 		for (k = 0; k<n; k++)
 			flag[k] = 0;
+		continue_start:
 		while (height[i]<tlen && i <= len)
 			i++;
 		j = i;
@@ -122,7 +123,8 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 		if (pattern_start.find(sa[i]) != pattern_start.end())
 		{
 			i = j;
-			continue;
+			goto continue_start;
+			//continue;
 		}
 		//if (j - i + 2 <= n / 2)
 		//{
