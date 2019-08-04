@@ -130,6 +130,7 @@
     <ClInclude Include="..\..\src\BaseTool.h" />
     <ClInclude Include="..\..\src\protocol.h" />
     <ClInclude Include="..\..\src\relu_reduction.h" />
+    <ClInclude Include="..\..\src\SuffixSearch.h" />
     <ClInclude Include="..\..\src\util.h" />
   </ItemGroup>
   <ItemGroup>
