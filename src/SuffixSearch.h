@@ -9,16 +9,17 @@ using namespace std;
 
 #define maxn (1460 *4)
 #define maxPacket (1000)
-int cmp(int *r, int a, int b, int l)
+int cmp(unsigned int *r, int a, int b, int l)
 //字符串比较函数
 {
 	return r[a] == r[b] && r[a + l] == r[b + l];
 }
 
-void da(  int *r,   int *sa, int n, int m,  int *wa,  int *wb,  int *ws,  int *wv)
+void da( unsigned int *r,   int *sa, int n, int m, unsigned int *wa, unsigned int *wb, unsigned  int *ws,  unsigned int *wv)
 //根据输入串,计算它的后缀数组
 {
-	int i, j, p, *x = wa, *y = wb, *t;
+	int i, j, p;
+	unsigned int *x = wa, *y = wb, *t;
 	for (i = 0; i<m; i++) ws[i] = 0;
 	for (i = 0; i<n; i++) ws[x[i] = r[i]]++;
 	for (i = 1; i<m; i++) ws[i] += ws[i - 1];
@@ -38,7 +39,7 @@ void da(  int *r,   int *sa, int n, int m,  int *wa,  int *wb,  int *ws,  int *w
 	return;
 }
 
-void calheight(  int *r,   int *sa, int n,  int * rank,  int *height)
+void calheight( unsigned  int *r,   int *sa, int n,  int * rank,  int *height)
 //根据输入串和后缀数组,计算rank和height
 {
 	int i, j, k = 0;
@@ -79,7 +80,7 @@ int check(int tlen,char  *flag,  int *height,  int *cate,  int *sa,int len,int n
 	return 0;
 }
 
-void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold,  int *a )
+void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold, unsigned int *a )
 {
 	if (tlen == 0)
 	{
@@ -127,7 +128,7 @@ public:
 		i(0), j(0),
 		n(0)
 	{
-		a = (  int *)malloc(sizeof(  int)*maxn);
+		a = ( unsigned  int *)malloc(sizeof( unsigned int)*maxn);
 		cate = (  int *)malloc(sizeof(  int)*maxn);
 		allocate = maxn;
 		used = 0;	
@@ -156,7 +157,7 @@ public:
 			free(flag);
 	}
 public:
-	void feed(char  * payload_str, int length)
+	void feed(unsigned char  * payload_str, int length)
 		//填充新的载荷内容
 	{
 		len1 = length;
@@ -169,9 +170,9 @@ public:
 		{
 			allocate +=max(maxn,allocate); //倍增申请内存
 			int * p_cate = (int *)malloc(sizeof(int)* allocate);
-			int * p_a = (int *)malloc(sizeof(int)* allocate);
+			unsigned int * p_a = (unsigned int *)malloc(sizeof(unsigned int)* allocate);
 			memcpy(p_cate, cate, used * sizeof(int));
-			memcpy(p_a, a, used * sizeof(int));
+			memcpy(p_a, a, used * sizeof(unsigned int));
 			free(a);
 			free(cate);
 			cate = p_cate;
@@ -195,10 +196,10 @@ public:
 		sa = (  int *)malloc(sizeof(  int)*allocate);
 		rank = (  int *)malloc(sizeof(  int)*allocate);
 		height = (int *)malloc(sizeof(int)*allocate);
-		wa = (  int *)malloc(sizeof(  int)*allocate);
-		wb = (  int *)malloc(sizeof(  int)*allocate);
-		wv = (  int *)malloc(sizeof(  int)*allocate);
-		ws =  (  int *)malloc(sizeof(  int)*allocate);
+		wa = (  unsigned int *)malloc(sizeof(unsigned  int)*allocate);
+		wb = (  unsigned int *)malloc(sizeof( unsigned int)*allocate);
+		wv = (  unsigned int *)malloc(sizeof( unsigned int)*allocate);
+		ws =  ( unsigned  int *)malloc(sizeof( unsigned int)*allocate);
 
 		flag = (char *)malloc(sizeof(char)* max(n+10,maxPacket));
 
@@ -235,8 +236,8 @@ private:
 	int len1, len, n, up, mx,threshold;
 	//mx :	所有串里面,最大的长度
 	//up :	字符串之间的分割符
-	int *sa,*rank,*height;
-	int *wa, *wb, *wv, *ws, *a, *cate;
+	int *sa, *rank, *height, *cate;
+	unsigned int *wa, *wb, *wv, *ws, *a;
 	//sa[]:		后缀数组
 	//cate[] :  记录某种字符属于那个字符串
 	//a[]	:	所有字符串会拼接在一起,字符串与字符串之间的分隔符使用 "up + 字符串id "隔开

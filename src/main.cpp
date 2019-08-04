@@ -4,6 +4,8 @@
 #include "relu_reduction.h"
 #include "SuffixSearch.h"
 #define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\8080\\"
+typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
+
 Relu_Reduction relu;
 float freq_threshold = 0.8;
 
@@ -114,10 +116,9 @@ int gather_payload(const _packet& packet)
 	}
 	return 0;
 }
-int clean_pcap(char *pcapname, char * filter = "", char redirect = 0)
+int loop_pcap(char * pcapname, char *filter,callback function)
 {
 	pcap_gather gather = pcap_gather(pcapname);
-
 	int packetno = 1;
 	while (true)
 	{
@@ -128,7 +129,7 @@ int clean_pcap(char *pcapname, char * filter = "", char redirect = 0)
 			int offset = gather_payload(packet);
 			if (offset)
 			{
-				relu.feed_payload(packet.data + offset, packet.len - offset);
+				function((char *)packet.data + offset, packet.len - offset);
 			}
 			packetno++;
 		}
@@ -152,37 +153,31 @@ int _main()
 	char *str1 = "abcdefg";
 	char *str2 = "bcdefgh";
 	char *str3 = "1234567";
-	search.feed(str1, strlen(str1));
-	search.feed(str2, strlen(str2));
-	search.feed(str3, strlen(str3));
+	search.feed((unsigned char *)str1, strlen(str1));
+	search.feed((unsigned char *)str2, strlen(str2));
+	search.feed((unsigned char *)str3, strlen(str3));
 	search.calc();
 	system("pause");
 	exit(0);
 	return 0;
 }
+
 int main()
 {
 	char PCAPDIR_[230] = { 0 };
 	sprintf(PCAPDIR_, "%s\\*", PCAPDIR);
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
+	SuffixSearch search(0.5);
 	for (int i = 0; i < files.size(); i++)
 	{
 		char pcapname[256] = { 0 };
 		freopen("CON", "w", stdout);
 		sprintf(pcapname, "%s%s", PCAPDIR_, files[i].c_str());
 		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
-		clean_pcap(pcapname);
-	}
-	relu.display_ansiic();
-	vector< vector<unsigned long long> > item_recorders;
-	for (int i = 0; i < files.size(); i++)
-	{
-		char pcapname[256] = { 0 };
-		freopen("CON", "w", stdout);
-		sprintf(pcapname, "%s%s", PCAPDIR_, files[i].c_str());
+		
+		//read pcaps 
 		pcap_gather gather = pcap_gather(pcapname);
-
 		int packetno = 1;
 		while (true)
 		{
@@ -193,8 +188,9 @@ int main()
 				int offset = gather_payload(packet);
 				if (offset)
 				{
-					relu.encode(packet.data + offset, packet.len - offset, item_recorders);
+					search.feed(packet.data + offset, packet.len - offset);
 				}
+				packetno++;
 			}
 			else
 			{
@@ -202,100 +198,7 @@ int main()
 			}
 		}
 	}
-	//生成频繁项集合
-	vector< set< unsigned long long > > item_set;
-	item_set.clear();
-	map< unsigned long long, int > items;
-	for (int i = 0; i < item_recorders.size(); i++)
-	{
-		item_set.push_back(set < unsigned long long >());
-		for (int j = 0; j < item_recorders[i].size(); j++)
-		{
-
-			if (items.find(item_recorders[i][j]) == items.end())
-			{
-				items[item_recorders[i][j]] = 0;
-			}
-			if (item_set[i].find(item_recorders[i][j]) == item_set[i].end())
-			{
-				items[item_recorders[i][j]] += 1;
-			}
-			item_set[i].insert(item_recorders[i][j]);
-		}
-	}
-	vector< set< fitem > > frequent_item;
-	//过滤小于阈值的item
-	frequent_item.push_back(set<fitem>());//长度为1的。
-	for (auto it = items.begin(); it != items.end(); it++)
-	{
-		if (it->second > freq_threshold * item_recorders.size())
-		{
-			fitem item;
-			item.data.push_back(it->first);
-			frequent_item[0].insert(item);
-		}
-	}
-	//
-	frequent_item.push_back(set<fitem>());//长度为2的。
-
-	for (auto it = frequent_item[0].begin(); it != frequent_item[0].end(); it++)
-	{
-		it++;
-		auto it2 = it;
-		it--;
-		for (; it2 != frequent_item[0].end(); it2++)
-		{
-			int count = 0;
-			for (int i = 0; i < item_set.size(); i++)
-			{
-				bool cond = true;
-				for (int j = 0; j < it->data.size(); j++)
-				{
-					if (item_set[i].find(it->data[j]) == item_set[i].end())
-					{
-						cond = false;
-						break;
-					}
-				}
-				if (!cond) continue;
-				for (int j = 0; j < it2->data.size(); j++)
-				{
-					if (item_set[i].find(it2->data[j]) == item_set[i].end())
-					{
-						cond = false;
-						break;
-					}
-				}
-				if (!cond) continue;
-				count += 1;
-			}
-
-			if (count > freq_threshold * item_recorders.size())
-			{
-				fitem item;
-				for (int i = 0; i < it->data.size(); i++)
-				{
-					item.data.push_back(it->data[i]);
-				}
-				for (int i = 0; i < it2->data.size(); i++)
-				{
-					item.data.push_back(it2->data[i]);
-				}
-				frequent_item[1].insert(item);
-			}
-		}
-	}
-
-		for (auto it = frequent_item[1].begin(); it != frequent_item[1].end(); it++)
-		{
-			for (int i = 0; i < it->data.size(); i++)
-			{
-
-				display_rule((unsigned char *)&it->data[i], 8);
-				printf("->");
-			}
-			printf("\n");
-		}
+	search.calc();
 	system("pause");
 	return 0;
 }
