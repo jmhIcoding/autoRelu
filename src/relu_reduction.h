@@ -44,7 +44,7 @@ class Relu_Reduction
 {
 
 public:
-	Relu_Reduction(int _key_len=4):
+	Relu_Reduction(int _key_len=8):
 		key_len(_key_len)
 	{
 		frequency.clear();

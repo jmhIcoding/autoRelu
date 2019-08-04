@@ -2,10 +2,10 @@
 #include <time.h>
 #include "BaseTool.h"
 #include "relu_reduction.h"
-
-#define PCAPDIR "C:\\Users\\dk\\Desktop\\wechat_and_whatsapp\\8080"
+#include "SuffixSearch.h"
+#define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\8080\\"
 Relu_Reduction relu;
-float freq_threshold = 0.2;
+float freq_threshold = 0.8;
 
 void print_payload(unsigned char *data, int len)
 {
@@ -20,6 +20,13 @@ void print_payload(unsigned char *data, int len)
 		{
 			printf("\n");
 		}
+	}
+}
+void display_rule(unsigned char * data, int len)
+{
+	for (int i = 0; i < len; i++)
+	{
+		printf("%c", data[i]);
 	}
 }
 int gather_payload(const _packet& packet)
@@ -139,17 +146,22 @@ void test()
 	unsigned long long rawdata = 0x0102030405060708;
 	rst = relus.hash((unsigned char*)&rawdata, 4);
 }
+int _main()
+{
+	SuffixSearch search(0.5);
+	char *str1 = "abcdefg";
+	char *str2 = "bcdefgh";
+	char *str3 = "1234567";
+	search.feed(str1, strlen(str1));
+	search.feed(str2, strlen(str2));
+	search.feed(str3, strlen(str3));
+	search.calc();
+	system("pause");
+	exit(0);
+	return 0;
+}
 int main()
 {
-
-	//int start = clock();
-	//char pcapname[] = "1556411102.pcap";
-	//clean_pcap(pcapname, "host 47.100.21.91 and (tcp or udp)", 1);
-	//int end = clock();
-	//freopen("CON", "w", stdout);
-	//printf("Time Use:%d\n", end - start);
-	//return 0;
-
 	char PCAPDIR_[230] = { 0 };
 	sprintf(PCAPDIR_, "%s\\*", PCAPDIR);
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");
@@ -245,16 +257,16 @@ int main()
 						break;
 					}
 				}
-				if (!cond) break;
+				if (!cond) continue;
 				for (int j = 0; j < it2->data.size(); j++)
 				{
-					if (item_set[i].find(it->data[j]) == item_set[i].end())
+					if (item_set[i].find(it2->data[j]) == item_set[i].end())
 					{
 						cond = false;
 						break;
 					}
 				}
-				if (!cond) break;
+				if (!cond) continue;
 				count += 1;
 			}
 
@@ -274,7 +286,16 @@ int main()
 		}
 	}
 
+		for (auto it = frequent_item[1].begin(); it != frequent_item[1].end(); it++)
+		{
+			for (int i = 0; i < it->data.size(); i++)
+			{
 
+				display_rule((unsigned char *)&it->data[i], 8);
+				printf("->");
+			}
+			printf("\n");
+		}
 	system("pause");
 	return 0;
 }
