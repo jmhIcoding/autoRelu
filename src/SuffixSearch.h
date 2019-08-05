@@ -230,6 +230,14 @@ public:
 			allocate +=max(maxn,allocate); //±∂‘ˆ…Í«Îƒ⁄¥Ê
 			int * p_cate = (int *)malloc(sizeof(int)* allocate);
 			unsigned int * p_a = (unsigned int *)malloc(sizeof(unsigned int)* allocate);
+			if (p_cate == NULL || p_a == NULL)
+			{
+				printf("Cannot allocate more memory!!!\n");
+				__asm
+				{
+					int 0x3;
+				}
+			}
 			memset(p_cate, 0, sizeof(unsigned int)*allocate);
 			memset(p_a, 0, sizeof(unsigned int)*allocate);
 			memcpy(p_cate, cate, used * sizeof(int));
