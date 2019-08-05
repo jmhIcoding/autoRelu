@@ -3,7 +3,8 @@
 #include "BaseTool.h"
 #include "relu_reduction.h"
 #include "SuffixSearch.h"
-#define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\80\\"
+#include "Cluster.h"
+#define PCAPDIR "C:\\Users\\dk\\Desktop\\wechat_and_whatsapp\\80\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -161,7 +162,6 @@ int _main()
 	exit(0);
 	return 0;
 }
-
 int main()
 {
 	char PCAPDIR_[230] = { 0 };
@@ -169,7 +169,10 @@ int main()
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
 	SuffixSearch search(0.1);
-	for (int i = 0; i <min(100, files.size()); i++)
+	StatisticCluster cluster(30);
+	vector<int> cdf(files.size()+1, 0);
+	int packetno = 0;
+	for (int i = 0; i <files.size(); i++)
 	{
 		char pcapname[256] = { 0 };
 		freopen("CON", "w", stdout);
@@ -178,19 +181,24 @@ int main()
 		
 		//read pcaps 
 		pcap_gather gather = pcap_gather(pcapname);
-		int packetno = 1;
+		cdf[i] = packetno;
 		while (true)
 		{
 			_packet packet;
 			gather.get_next_packet(&packet);
 			if (packet.data && packet.len)
 			{
+				//不同协议还需要解析
+				packetno++;
 				int offset = gather_payload(packet);
 				if (offset)
 				{
-					search.feed(packet.data + offset, packet.len - offset);
+					//search.feed(packet.data + offset, packet.len - offset);
+					cluster.feed(packet.data + offset, packet.len - offset);
 				}
-				packetno++;
+				
+				//search.feed(packet.data, packet.len);
+				
 			}
 			else
 			{
@@ -198,7 +206,26 @@ int main()
 			}
 		}
 	}
-	search.calc();
+	cdf[files.size()] = packetno;
+	//search.calc();
+	cluster.kmean();
+	for (int i = 0; i < cluster.clusters_id.size(); i++)
+	{
+		if (cluster.clusters_id[i].size())
+		{
+			for (auto it = cluster.clusters_id[i].begin(); it != cluster.clusters_id[i].end(); it++)
+			{
+				for (int j = 0; j < files.size(); j++)
+				{
+					if (*it >= cdf[j] && *it < cdf[j + 1])
+					{
+						printf("%s:%d\n", files[j].c_str(), *it - cdf[j] +1  );
+						break;
+					}
+				}
+			}
+		}
+	}
 	system("pause");
 	return 0;
 }
