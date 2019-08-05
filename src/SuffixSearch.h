@@ -159,7 +159,15 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 			
 				pattern_strs.insert(string(tmpStr,tlen));
 				pattern_start.insert(sa[i]);
+				printf("Occurance : %d\n", cnt);
+				printf("Asiic Format:\n");
 				printf("%s", tmpStr);
+				printf("\nHex Format:\n");
+				for (int index = 0; index < tlen; index++)
+				{
+					unsigned char ch = tmpStr[index];
+					printf("0x%0.2X ",ch);
+				}
 				printf("\n===========================================\n");
 			}
 		}
@@ -173,7 +181,9 @@ public:
 		up(290),
 		mx(1), 
 		i(0), j(0),
-		n(0)
+		n(0),
+		a(0),cate(0),sa(0),rank(0),height(0),wa(0),wb(0),wv(0),ws(0),flag(0)
+
 	{
 		a = ( unsigned  int *)malloc(sizeof( unsigned int)*maxn);
 		cate = (  int *)malloc(sizeof(  int)*maxn);
@@ -244,36 +254,39 @@ public:
 	void calc()
 	{
 		//ÉêÇë¸¨ÖúÄÚ´æ
-		sa = (  int *)malloc(sizeof(  int)*allocate);
-		memset(sa, 0, sizeof(int)* allocate);
+		if (n)
+		{
+			sa = (int *)malloc(sizeof(int)*allocate);
+			memset(sa, 0, sizeof(int)* allocate);
 
-		rank = (  int *)malloc(sizeof(  int)*allocate);
-		memset(rank, 0, sizeof(int)* allocate);
+			rank = (int *)malloc(sizeof(int)*allocate);
+			memset(rank, 0, sizeof(int)* allocate);
 
-		height = (int *)malloc(sizeof(int)*allocate);
-		memset(height, 0, sizeof(int)* allocate);
+			height = (int *)malloc(sizeof(int)*allocate);
+			memset(height, 0, sizeof(int)* allocate);
 
-		wa = (  unsigned int *)malloc(sizeof(unsigned  int)*allocate);
-		memset(wa, 0, sizeof(unsigned int)* allocate);
+			wa = (unsigned int *)malloc(sizeof(unsigned  int)*allocate);
+			memset(wa, 0, sizeof(unsigned int)* allocate);
 
-		wb = (  unsigned int *)malloc(sizeof( unsigned int)*allocate);
-		memset(wb, 0, sizeof(unsigned int)* allocate);
+			wb = (unsigned int *)malloc(sizeof(unsigned int)*allocate);
+			memset(wb, 0, sizeof(unsigned int)* allocate);
 
-		wv = (  unsigned int *)malloc(sizeof( unsigned int)*allocate);
-		memset(wv, 0, sizeof(unsigned int)* allocate);
+			wv = (unsigned int *)malloc(sizeof(unsigned int)*allocate);
+			memset(wv, 0, sizeof(unsigned int)* allocate);
 
-		ws =  ( unsigned  int *)malloc(sizeof( unsigned int)*allocate);
-		memset(ws, 0, sizeof(unsigned int)* allocate);
+			ws = (unsigned  int *)malloc(sizeof(unsigned int)*allocate);
+			memset(ws, 0, sizeof(unsigned int)* allocate);
 
-		flag = (char *)malloc(sizeof(char)*(n+10));
-		memset(flag, 0, sizeof(char )* (n+10));
-		//¼ÆËã
-		a[--j] = 0;
-		len = j;
-		threshold = n * fthreshold;
-		da(a, sa, len + 1, 300+n, wa, wb, ws, wv);
-		calheight(a, sa, len, rank, height);
-		solve();
+			flag = (char *)malloc(sizeof(char)*(n + 10));
+			memset(flag, 0, sizeof(char)* (n + 10));
+			//¼ÆËã
+			a[--j] = 0;
+			len = j;
+			threshold = n * fthreshold;
+			da(a, sa, len + 1, 300 + n, wa, wb, ws, wv);
+			calheight(a, sa, len, rank, height);
+			solve();
+		}
 	}
 private:
 	void solve()
