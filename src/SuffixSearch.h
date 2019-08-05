@@ -119,13 +119,13 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 		j = i;
 		while (height[j] >= tlen && j <= len)
 			j++;
-
 		if (pattern_start.find(sa[i]) != pattern_start.end())
 		{
 			i = j;
-			goto continue_start;
-			//continue;
+			//goto continue_start;
+			continue;
 		}
+
 		//if (j - i + 2 <= n / 2)
 		//{
 		//	i = j;
@@ -140,6 +140,7 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 			cnt += flag[k];
 		if (cnt>threshold)
 		{
+
 
 			for (k = 0; k<tlen; k++)
 				tmpStr[k] = a[sa[i] + k];
@@ -262,7 +263,7 @@ public:
 	void calc()
 	{
 		//ÉêÇë¸¨ÖúÄÚ´æ
-		if (n)
+		if (n>1)
 		{
 			sa = (int *)malloc(sizeof(int)*allocate);
 			memset(sa, 0, sizeof(int)* allocate);

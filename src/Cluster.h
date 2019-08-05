@@ -115,34 +115,35 @@ public:
 				if (cluster != id2cluster[i])
 				{
 					flag = 1;
-					//更新类心
-					for (int j = 0; j < clusters_core[cluster].size(); j++)
-					{
-						clusters_core[cluster][j] = (clusters_core[cluster][j] * clusters_id[cluster].size() + dataset[i][j]) / ((clusters_id[cluster].size() + 1) + EXP);
-						clusters_core[id2cluster[i]][j] = (clusters_core[id2cluster[i]][j] * clusters_id[id2cluster[i]].size() - dataset[i][j]) / (clusters_id[id2cluster[i]].size() - 1 + EXP);
-					}
+					////更新类心,此处更新类心会很难收敛
+
+					//for (int j = 0; j < clusters_core[cluster].size(); j++)
+					//{
+					//	clusters_core[cluster][j] = (clusters_core[cluster][j] * clusters_id[cluster].size() + dataset[i][j]) / ((clusters_id[cluster].size() + 1) + EXP);
+					//	clusters_core[id2cluster[i]][j] = (clusters_core[id2cluster[i]][j] * clusters_id[id2cluster[i]].size() - dataset[i][j]) / (clusters_id[id2cluster[i]].size() - 1 + EXP);
+					//}
 					clusters_id[cluster].insert(i);
 					clusters_id[id2cluster[i]].erase(i);
 					id2cluster[i] = cluster;
 				}
 			}
-			//if (flag)
-			//{
-			//	//更新每个类簇的簇心
-			//	for (int cluster = 0; cluster < cluster_cnt; cluster++)
-			//	{
-			//		//对于每一个类,更新类心
-			//		for (int i = 0; i < clusters_core[cluster].size(); i++)
-			//		{
-			//			clusters_core[cluster][i] = 0.0;
-			//			for (auto it = clusters_id[cluster].begin(); it != clusters_id[cluster].end(); it++)
-			//			{
-			//				clusters_core[cluster][i] += dataset[*it][i];
-			//			}
-			//			clusters_core[cluster][i] /= (clusters_id[cluster].size() + EXP);
-			//		}
-			//	}
-			//}
+			if (flag)
+			{
+				//更新每个类簇的簇心
+				for (int cluster = 0; cluster < cluster_cnt; cluster++)
+				{
+					//对于每一个类,更新类心
+					for (int i = 0; i < clusters_core[cluster].size(); i++)
+					{
+						clusters_core[cluster][i] = 0.0;
+						for (auto it = clusters_id[cluster].begin(); it != clusters_id[cluster].end(); it++)
+						{
+							clusters_core[cluster][i] += dataset[*it][i];
+						}
+						clusters_core[cluster][i] /= (clusters_id[cluster].size() + EXP);
+					}
+				}
+			}
 		}
 
 	}

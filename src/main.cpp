@@ -4,7 +4,7 @@
 #include "relu_reduction.h"
 #include "SuffixSearch.h"
 #include "Cluster.h"
-#define PCAPDIR "C:\\Users\\dk\\Desktop\\wechat_and_whatsapp\\80\\"
+#define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\80\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -169,7 +169,7 @@ int main()
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
 	SuffixSearch search(0.1);
-	StatisticCluster cluster(30);
+	StatisticCluster cluster(10);
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
 	vector< unsigned char *> payload_buffer;
@@ -219,7 +219,7 @@ int main()
 	{
 		if (cluster.clusters_id[i].size())
 		{
-			SuffixSearch search(0.2);
+			SuffixSearch search(0.1);
 			for (auto it = cluster.clusters_id[i].begin(); it != cluster.clusters_id[i].end(); it++)
 			{
 				for (int j = 0; j < files.size(); j++)
