@@ -172,6 +172,8 @@ int main()
 	StatisticCluster cluster(30);
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
+	vector< unsigned char *> payload_buffer;
+	vector<int >			payload_length;
 	for (int i = 0; i <files.size(); i++)
 	{
 		char pcapname[256] = { 0 };
@@ -195,6 +197,10 @@ int main()
 				{
 					//search.feed(packet.data + offset, packet.len - offset);
 					cluster.feed(packet.data + offset, packet.len - offset);
+					unsigned char * p = (unsigned char *)malloc(sizeof(char) * (packet.len - offset));
+					memcpy(p, packet.data + offset, packet.len - offset);
+					payload_buffer.push_back(p);
+					payload_length.push_back(packet.len - offset);
 				}
 				
 				//search.feed(packet.data, packet.len);
@@ -213,6 +219,7 @@ int main()
 	{
 		if (cluster.clusters_id[i].size())
 		{
+			SuffixSearch search(0.2);
 			for (auto it = cluster.clusters_id[i].begin(); it != cluster.clusters_id[i].end(); it++)
 			{
 				for (int j = 0; j < files.size(); j++)
@@ -220,10 +227,12 @@ int main()
 					if (*it >= cdf[j] && *it < cdf[j + 1])
 					{
 						printf("%s:%d\n", files[j].c_str(), *it - cdf[j] +1  );
+						search.feed(payload_buffer[*it],payload_length[*it]);
 						break;
 					}
 				}
 			}
+			search.calc();
 		}
 	}
 	system("pause");
