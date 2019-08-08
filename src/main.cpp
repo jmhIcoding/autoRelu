@@ -4,7 +4,9 @@
 #include "relu_reduction.h"
 #include "SuffixSearch.h"
 #include "Cluster.h"
-#define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\80\\"
+#include "LengthField.h"
+#include "n-gram.h"
+#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\teamviewer\\editing_doc\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -40,6 +42,8 @@ int gather_payload(const _packet& packet)
 		//ip Ð­Òé
 	{
 		ip_header ip = ip_parser(packet.data + sizeof(ethII_header));//parse ip header
+		//测试！！！！ 对IP的长度字段的发现能力
+		//return packet.len - ip.tlen;
 		if (ip.proto == 0x11)
 			//udp
 		{
@@ -119,7 +123,7 @@ int gather_payload(const _packet& packet)
 }
 int loop_pcap(char * pcapname, char *filter,callback function)
 {
-	pcap_gather gather = pcap_gather(pcapname);
+	pcap_gather gather = pcap_gather(pcapname,filter);
 	int packetno = 1;
 	while (true)
 	{
@@ -170,11 +174,13 @@ int main()
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
 	SuffixSearch search(0.1);
 	StatisticCluster cluster(10);
+	NGram ngram(2);
+
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
 	vector< unsigned char *> payload_buffer;
 	vector<int >			payload_length;
-	for (int i = 0; i <files.size(); i++)
+	for (int i = 0; i <min(10,files.size()); i++)
 	{
 		char pcapname[256] = { 0 };
 		freopen("CON", "w", stdout);
@@ -182,7 +188,7 @@ int main()
 		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
 		
 		//read pcaps 
-		pcap_gather gather = pcap_gather(pcapname);
+		pcap_gather gather = pcap_gather(pcapname,"src host 47.100.21.91");
 		cdf[i] = packetno;
 		while (true)
 		{
@@ -195,8 +201,11 @@ int main()
 				int offset = gather_payload(packet);
 				if (offset)
 				{
+					//最长前缀搜索
 					//search.feed(packet.data + offset, packet.len - offset);
-					cluster.feed(packet.data + offset, packet.len - offset);
+					//聚类
+					//cluster.feed(packet.data + offset, packet.len - offset);
+					//ngram.feed((char*)packet.data + offset, packet.len - offset);
 					unsigned char * p = (unsigned char *)malloc(sizeof(char) * (packet.len - offset));
 					memcpy(p, packet.data + offset, packet.len - offset);
 					payload_buffer.push_back(p);
@@ -212,8 +221,13 @@ int main()
 			}
 		}
 	}
+	//长度字段的搜索
+	FindLengthField(payload_buffer, payload_length);
+	system("pause");
+	exit(0);
+
 	cdf[files.size()] = packetno;
-	//search.calc();
+	search.calc();
 	cluster.kmean();
 	for (int i = 0; i < cluster.clusters_id.size(); i++)
 	{
