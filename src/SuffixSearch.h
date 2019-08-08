@@ -167,7 +167,7 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 				for (int index = 0; index < tlen; index++)
 				{
 					unsigned char ch = tmpStr[index];
-					printf("0x%0.2X ",ch);
+					printf("0x%0.2X ",ch-1);
 				}
 				printf("\n===========================================\n");
 			}
@@ -251,7 +251,7 @@ public:
 		for (k = 0; k < len1; k++)
 		{
 			cate[j] = i;
-			a[j++] = payload_str[k] ;
+			a[j++] = 1+payload_str[k] ;
 		}
 		cate[j] = -1;
 		a[j++] = up + i;
