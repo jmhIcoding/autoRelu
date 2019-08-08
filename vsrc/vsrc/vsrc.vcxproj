@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\Accumulator.h" />
     <ClInclude Include="..\..\src\BaseTool.h" />
     <ClInclude Include="..\..\src\LengthField.h" />
     <ClInclude Include="..\..\src\n-gram.h" />
