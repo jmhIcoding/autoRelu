@@ -75,14 +75,18 @@ void display(unsigned char * pkt_data, int len, int nextline)
 #define DbgPrint(int,const char *,...)     ;
 #define display(unsigned char *,int,int)   ;
 #endif
-pcap_gather::pcap_gather(char *pcapfilename)
+pcap_gather::pcap_gather(char *pcapfilename,char * filter_string = NULL)
 {
 	this->pcapt = pcap_open_offline(pcapfilename, this->errBuf);
 	if (this->pcapt == NULL)
 	{
 		printf("Error when open pcap file. error is :%s\n",this->errBuf);
-		//system("pause");
-		//exit(-1);
+		system("pause");
+		exit(-1);
+	}
+	if (filter_string != NULL)
+	{
+		set_filter(filter_string, this->pcapt);
 	}
 }
 

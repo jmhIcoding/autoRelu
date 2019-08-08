@@ -63,7 +63,7 @@ class pcap_gather
 {
 
 public:
-	pcap_gather(char * pcapfile);//从文件中读包
+	pcap_gather(char * pcapfile,char * filter_string);//从文件中读包
 	pcap_gather(int interfaces);//从网卡中抓取实时的报文
 	void set_filter(char *filter, pcap_t * pt = NULL);
 	vector< _packet> get_packets(pcap_t * pt = NULL);//获取全部报文,主要用于通过文件获取报文
