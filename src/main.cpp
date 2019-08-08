@@ -5,6 +5,7 @@
 #include "SuffixSearch.h"
 #include "Cluster.h"
 #include "LengthField.h"
+#include "Accumulator.h"
 #include "n-gram.h"
 #define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\teamviewer\\editing_doc\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
@@ -222,7 +223,9 @@ int main()
 		}
 	}
 	//长度字段的搜索
-	FindLengthField(payload_buffer, payload_length);
+	//FindLengthField(payload_buffer, payload_length);
+	//计数器字段的搜索
+	FindAccumulatorField(payload_buffer, payload_length);
 	system("pause");
 	exit(0);
 
