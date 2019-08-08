@@ -128,6 +128,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\BaseTool.h" />
+    <ClInclude Include="..\..\src\LengthField.h" />
+    <ClInclude Include="..\..\src\n-gram.h" />
     <ClInclude Include="..\..\src\protocol.h" />
     <ClInclude Include="..\..\src\relu_reduction.h" />
     <ClInclude Include="..\..\src\SuffixSearch.h" />
