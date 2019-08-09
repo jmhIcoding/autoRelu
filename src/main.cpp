@@ -7,7 +7,7 @@
 #include "LengthField.h"
 #include "Accumulator.h"
 #include "n-gram.h"
-#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\teamviewer\\editing_doc\\"
+#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\realvnc\\editing_doc\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -181,7 +181,7 @@ int main()
 	int packetno = 0;
 	vector< unsigned char *> payload_buffer;
 	vector<int >			payload_length;
-	for (int i = 0; i <min(10,files.size()); i++)
+	for (int i = 0; i <min(100,files.size()); i++)
 	{
 		char pcapname[256] = { 0 };
 		freopen("CON", "w", stdout);
