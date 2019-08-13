@@ -134,6 +134,7 @@
     <ClInclude Include="..\..\src\protocol.h" />
     <ClInclude Include="..\..\src\relu_reduction.h" />
     <ClInclude Include="..\..\src\SuffixSearch.h" />
+    <ClInclude Include="..\..\src\tag_length_value.h" />
     <ClInclude Include="..\..\src\util.h" />
   </ItemGroup>
   <ItemGroup>

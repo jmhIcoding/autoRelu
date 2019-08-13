@@ -7,7 +7,9 @@
 #include "LengthField.h"
 #include "Accumulator.h"
 #include "n-gram.h"
-#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\realvnc\\editing_doc\\"
+#include "tag_length_value.h"
+
+#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\tls\\cn.udacity.com\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -57,6 +59,7 @@ int gather_payload(const _packet& packet)
 				//printf("%d,", udp.len - 8);
 				//print_payload(packet.data + sizeof(ethII_header)+4 * (ip.ver_ihl & 0xF) + 8, udp.len - 8);
 				//printf("\n");
+				return 0;
 				return packet.len - (udp.len - 8) ;
 				//return (int)packet.data + sizeof(ethII_header) + 4 * (ip.ver_ihl & 0xF) + 8;
 			}
@@ -73,7 +76,12 @@ int gather_payload(const _packet& packet)
 				DbgPrint(tcp_info, &tcp);
 				//printf("%d,", len);
 				//printf("\n");
-				return packet.len - len ;
+				if(packet.data[packet.len -len + 0]==0x16 && packet.data[packet.len -len +5]==0x01)
+					return packet.len - len ;
+				else
+				{
+					return 0;
+				}
 			}
 			/*
 			else if (len > 1460)
@@ -180,7 +188,7 @@ int main()
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
 	vector< unsigned char *> payload_buffer;
-	vector<int >			payload_length;
+	vector<unsigned int >			payload_length;
 	for (int i = 0; i <min(100,files.size()); i++)
 	{
 		char pcapname[256] = { 0 };
@@ -189,7 +197,7 @@ int main()
 		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
 		
 		//read pcaps 
-		pcap_gather gather = pcap_gather(pcapname,"src host 47.100.21.91");
+		pcap_gather gather = pcap_gather(pcapname,"tcp and port 443");
 		cdf[i] = packetno;
 		while (true)
 		{
@@ -213,8 +221,6 @@ int main()
 					payload_length.push_back(packet.len - offset);
 				}
 				
-				//search.feed(packet.data, packet.len);
-				
 			}
 			else
 			{
@@ -225,10 +231,33 @@ int main()
 	//长度字段的搜索
 	//FindLengthField(payload_buffer, payload_length);
 	//计数器字段的搜索
-	FindAccumulatorField(payload_buffer, payload_length);
+	//FindAccumulatorField(payload_buffer, payload_length);
+	for (int i = 0; i < 40; i++)
+	{
+		printf("\n i==%d\n", i);
+
+		vector< unsigned char *> new_payload_buffer;
+		vector<unsigned int >	new_payload_length;
+		for (int j = 0; j < payload_buffer.size(); j++)
+		{
+			new_payload_buffer.push_back(payload_buffer[j] + 9 + i);
+			new_payload_length.push_back(payload_length[j] - (9 + i));
+
+		}
+		if (i == 34)
+		{
+			__asm
+			{
+				int 0x3;
+			}
+		}
+		auto root = getTreeStruct<Field>(new_payload_buffer, new_payload_length, 10);
+		root->display(0, root);
+
+	}
 	system("pause");
 	exit(0);
-
+	printf("\n\n\n=============================\n");
 	cdf[files.size()] = packetno;
 	search.calc();
 	cluster.kmean();
