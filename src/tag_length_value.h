@@ -59,13 +59,14 @@ template <typename T=Field>
 struct Node
 {
 	NodeType type;
-	int len;
+	int len,offset;
 
 	Node *child, *parent, *sibling;
 	set<T> valueset;
 	Node()
 	{
 		len = 0;
+		offset = 0;
 
 		type = NodeType::Unk;
 		valueset.clear();
@@ -77,12 +78,12 @@ struct Node
 		for (int i = 0; i < level; i++) printf("\t");
 		if (node)
 		{
-			printf("Type:%s,len:%d\t", NodeTypeString[node->type], node->len);
+			printf("Type:%s,len:%d,offset:%d\t", NodeTypeString[node->type], node->len,node->offset);
 
 			while (node->sibling)
 			{
 				node = node->sibling;
-				printf("Type:%s,len:%d\t", NodeTypeString[node->type], node->len);
+				printf("Type:%s,len:%d,offset:%d\t", NodeTypeString[node->type], node->len,node->offset);
 			}
 			if (node->child)
 			{
@@ -90,14 +91,15 @@ struct Node
 			}
 		}
 	}
+
 };
 template <typename T=Field>
 struct Node<T> * getTreeStruct(const vector< unsigned char *> & payload_dataset, const vector<unsigned int> & real_length, int thresholdValue)
-//构建树结构
-/*
-*	payload_dataset:待分析的载荷内容,注意!载荷可以是有偏移的,不一定是tcp/udp的原始载荷,输入的载荷应该是具有相似结构的数据包
-	thresholdValue: 一个tag能够取得的最多不同的值
-*/
+	//构建树结构
+	/*
+	*	payload_dataset:待分析的载荷内容,注意!载荷可以是有偏移的,不一定是tcp/udp的原始载荷,输入的载荷应该是具有相似结构的数据包
+		thresholdValue: 一个tag能够取得的最多不同的值
+	*/
 {
 	if (payload_dataset.size() <= 0) return NULL;
 	int min_length = real_length[0];
@@ -109,149 +111,162 @@ struct Node<T> * getTreeStruct(const vector< unsigned char *> & payload_dataset,
 		}
 	}
 	if (min_length <= 3) return NULL;
-	for (int i = 1; i < min_length - 3; i++)
-	//TLV结构至少也得占3个字节吧!
+	for (int offset_getTS = 0; offset_getTS < (min_length - 6); offset_getTS++)
 	{
+		for (int i = 1; i < (min_length - 3); i++)
+			//TLV结构至少也得占3个字节吧!
+		{
 
-		set <Field> tags;
-		for (int j = 0; j< payload_dataset.size(); j++)
-		{
-			Field tag(i);
-			tag.copy(payload_dataset[j], i);
-			tags.insert(tag);
-		}
-		if (tags.size() < thresholdValue)
-		{
-			printf("This can be a tag field,len:%d.\n",i);
-		}
-		else
-			//超出了阈值,说明这就不是一个tag了,此时就很有可能处于length的首字节
-		{
-			if (i == 1)
-				//一定不是一个tag.
-			{
-				printf("This can not be a tag.\n");
-			}
-			//可能从i开始就是length,之前都是tag
-
-			//检测这个偏移量是否可能是个length,计算这个比重
-			i--;
-			float ratio1 = 0.0,ratio2=0.0;//length是几个字节
+			set <Field> tags;
 			for (int j = 0; j < payload_dataset.size(); j++)
 			{
-				if ((payload_dataset[j][i] + i+1) <= real_length[j])
-				{
-					ratio1 += 1;//一个字节的比重
-				}
-				if ((payload_dataset[j][i - 1] * 256 + payload_dataset[j][i] + i+1) <= real_length[j])
-				{
-					ratio2 += 1;
-				}
+				Field tag(i);
+				tag.copy(payload_dataset[j] + offset_getTS, i);
+				tags.insert(tag);
 			}
-			ratio1 /= payload_dataset.size();
-			ratio2 /= payload_dataset.size();
-			if (ratio2 > 0.8)
+			if (tags.size() < thresholdValue)
 			{
-				printf("This can be 2 byte length field.\n");
-				Node<Field>* tagNode = new Node<Field>();
-				Node<Field>* lenNode = new Node<Field>();
-
-
-				tagNode->len = i - 1;
-				tagNode->type = NodeType::Tag;
-				lenNode->len = 2;
-				lenNode->type = NodeType::Length;
-				tagNode->sibling = lenNode;
-				vector< unsigned char *>  new_payload_dataset,follow_payload;
-				vector<unsigned int>  new_real_length,follow_real_length;
-				for (int j = 0; j < payload_dataset.size(); j++)
-				{
-					if ((real_length[j] - (payload_dataset[j][i - 1] * 256 + payload_dataset[j][i] + i + 1)) >= 0)
-					{
-						Field tag(i - 1);
-						tag.copy(payload_dataset[j], i - 1);
-						tagNode->valueset.insert(tag);
-						new_payload_dataset.push_back(payload_dataset[j] + i + 1);
-						new_real_length.push_back(real_length[j] - i - 1);
-
-						follow_payload.push_back(payload_dataset[j] + i + 1 + payload_dataset[j][i - 1] * 256 + payload_dataset[j][i] + i + 1);
-						follow_real_length.push_back(real_length[j] - (payload_dataset[j][i - 1] * 256 + payload_dataset[j][i] + i + 1));
-					}
-				}
-				Node<Field>* valNode = getTreeStruct(new_payload_dataset, new_real_length, thresholdValue);
-				Node<Field>* followNode = getTreeStruct(follow_payload, follow_real_length, thresholdValue);
-				if (valNode)
-				{
-					valNode->type = NodeType::Value;
-					lenNode->sibling = valNode;
-					if (followNode)
-					{
-						followNode->type = NodeType::Unk;
-						valNode->sibling = followNode;
-					}
-				}
-				Node<Field> * root = new Node<Field>();
-				root->child = tagNode;
-				tagNode->parent = root;
-				lenNode->parent = root;
-				if (valNode)
-				{
-					valNode->parent = root;
-				}
-				if (followNode)
-				{
-					followNode->parent = root;
-				}
-				return root;
-			}
-			else if (ratio1 > 0.8)
-			{
-				printf("This can be 1 byte length field.\n");
-
-				Node<Field>* tagNode = new Node<Field>();
-				Node<Field>* lenNode = new Node<Field>();
-
-
-				tagNode->len = i ;
-				tagNode->type = NodeType::Tag;
-				lenNode->len = 1;
-				lenNode->type = NodeType::Length;
-				tagNode->sibling = lenNode;
-				vector< unsigned char *>  new_payload_dataset, follow_payload;
-				vector<unsigned int>  new_real_length, follow_real_length;
-				for (int j = 0; j < payload_dataset.size(); j++)
-				{
-					Field tag(i);
-					tag.copy(payload_dataset[j], i);
-					tagNode->valueset.insert(tag);
-					new_payload_dataset.push_back(payload_dataset[j] + i);
-					new_real_length.push_back(real_length[j] - i);
-
-					follow_payload.push_back(payload_dataset[j] + i +payload_dataset[j][i]);
-					follow_real_length.push_back(real_length[j] - (payload_dataset[j][i] + i + 1));
-				}
-				Node<Field>* valNode = getTreeStruct(new_payload_dataset, new_real_length, thresholdValue);
-				Node<Field>* followNode = getTreeStruct(follow_payload, follow_real_length, thresholdValue);
-				if (valNode)
-				{
-					valNode->type = NodeType::Value;
-					lenNode->sibling = valNode;
-					if (followNode)
-					{
-						followNode->type = NodeType::Follow;
-						valNode->sibling = followNode;
-					}
-				}
-				Node<Field> * root = new Node<Field>();
-				root->child = tagNode;
-				return root;
+				printf("This can be a tag field,len:%d.\n", i);
 			}
 			else
+				//超出了阈值,说明这就不是一个tag了,此时就很有可能处于length的首字节
 			{
-				printf("This cannot be a length field...\n");
-				return NULL;
+				if (i <= 1)
+					//一定不是一个tag,而且不可能是一个length部分
+				{
+					printf("This can not be a tag.\n");
+					break;
+					Node<Field> * val = new Node<>();
+					val->type = NodeType::Value;
+					return val;
+				}
+				//可能从i开始就是length,之前都是tag
+
+				//检测这个偏移量是否可能是个length,计算这个比重
+				i--;
+				float ratio1 = 0.0, ratio2 = 0.0;//length是几个字节
+				for (int j = 0; j < payload_dataset.size(); j++)
+				{
+					if ((payload_dataset[j][i + offset_getTS] + i + 1) <= real_length[j])
+					{
+						ratio1 += 1;//一个字节的比重
+					}
+					if ((payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS] + i + 1) <= real_length[j])
+					{
+						ratio2 += 1;
+					}
+				}
+				ratio1 /= payload_dataset.size();
+				ratio2 /= payload_dataset.size();
+				if (ratio2 > 0.8)
+				{
+					printf("This can be 2 byte length field.\n");
+					Node<Field>* tagNode = new Node<Field>();
+					Node<Field>* lenNode = new Node<Field>();
+
+
+					tagNode->len = i - 1;
+					tagNode->type = NodeType::Tag;
+					lenNode->len = 2;
+					lenNode->type = NodeType::Length;
+					tagNode->sibling = lenNode;
+					vector< unsigned char *>  new_payload_dataset, follow_payload;
+					vector<unsigned int>  new_real_length, follow_real_length;
+					for (int j = 0; j < payload_dataset.size(); j++)
+					{
+						if ((real_length[j] - (payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS] + i + 1)) >= 0 && (real_length[j] - (payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS] + i + 1))<=1500)
+						{
+							Field tag(i - 1);
+							tag.copy(payload_dataset[j] + offset_getTS, i - 1);
+							tagNode->valueset.insert(tag);
+							new_payload_dataset.push_back(payload_dataset[j] + i + 1 + offset_getTS);
+							new_real_length.push_back((payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS]));
+
+							follow_payload.push_back(payload_dataset[j] + i + 1 + payload_dataset[j][i - 1] * 256 + payload_dataset[j][i] + i + 1 + offset_getTS);
+							follow_real_length.push_back(real_length[j] - (payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS]+i+1+offset_getTS));
+						}
+					}
+					Node<Field>* valNode = getTreeStruct(new_payload_dataset, new_real_length, thresholdValue);
+					Node<Field>* followNode = getTreeStruct(follow_payload, follow_real_length, thresholdValue);
+					if (valNode)
+					{
+						valNode->type = NodeType::Value;
+						lenNode->sibling = valNode;
+						if (followNode)
+						{
+							followNode->type = NodeType::Follow;
+							valNode->sibling = followNode;
+						}
+					}
+					Node<Field> * root = new Node<Field>();
+					root->child = tagNode;
+					root->offset = offset_getTS;
+					tagNode->parent = root;
+					lenNode->parent = root;
+					if (valNode)
+					{
+						valNode->parent = root;
+					}
+					if (followNode)
+					{
+						followNode->parent = root;
+					}
+					return root;
+				}
+				else if (ratio1 > 0.8)
+				{
+					printf("This can be 1 byte length field.\n");
+
+					Node<Field>* tagNode = new Node<Field>();
+					Node<Field>* lenNode = new Node<Field>();
+
+
+					tagNode->len = i;
+					tagNode->type = NodeType::Tag;
+					lenNode->len = 1;
+					lenNode->type = NodeType::Length;
+					tagNode->sibling = lenNode;
+					vector< unsigned char *>  new_payload_dataset, follow_payload;
+					vector<unsigned int>  new_real_length, follow_real_length;
+					for (int j = 0; j < payload_dataset.size(); j++)
+					{
+						Field tag(i);
+						tag.copy(payload_dataset[j] + offset_getTS, i);
+						tagNode->valueset.insert(tag);
+						new_payload_dataset.push_back(payload_dataset[j] + i + offset_getTS);
+						new_real_length.push_back((payload_dataset[j][i] + i + 1 + offset_getTS));
+
+						follow_payload.push_back(payload_dataset[j] + i + payload_dataset[j][i] + offset_getTS);
+						follow_real_length.push_back(real_length[j] - (payload_dataset[j][i] + i + 1 + offset_getTS));
+					}
+					Node<Field>* valNode = getTreeStruct(new_payload_dataset, new_real_length, thresholdValue);
+					Node<Field>* followNode = getTreeStruct(follow_payload, follow_real_length, thresholdValue);
+					if (valNode)
+					{
+						valNode->type = NodeType::Value;
+						lenNode->sibling = valNode;
+						if (followNode)
+						{
+							followNode->type = NodeType::Follow;
+							valNode->sibling = followNode;
+						}
+					}
+					Node<Field> * root = new Node<Field>();
+					root->child = tagNode;
+					return root;
+				}
+				else
+				{
+					printf("This cannot be a length field...\n");
+					break;
+					Node <>* val = new Node<>();
+					val->type = NodeType::Value;
+					return val;
+				}
 			}
 		}
 	}
-	return NULL;
+	Node <>* val = new Node<>();
+	val->type = NodeType::Value;
+	return val;
 }

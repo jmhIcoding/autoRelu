@@ -192,7 +192,7 @@ int main()
 	for (int i = 0; i <min(100,files.size()); i++)
 	{
 		char pcapname[256] = { 0 };
-		freopen("CON", "w", stdout);
+		freopen("con", "w", stdout);
 		sprintf(pcapname, "%s%s", PCAPDIR_, files[i].c_str());
 		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
 		
@@ -232,30 +232,30 @@ int main()
 	//FindLengthField(payload_buffer, payload_length);
 	//计数器字段的搜索
 	//FindAccumulatorField(payload_buffer, payload_length);
-	for (int i = 0; i < 40; i++)
+	for (int i = 0; i < 1; i++)
 	{
-		printf("\n i==%d\n", i);
+		printf("\n offset(i)==%d\n", i);
 
 		vector< unsigned char *> new_payload_buffer;
 		vector<unsigned int >	new_payload_length;
 		for (int j = 0; j < payload_buffer.size(); j++)
 		{
-			new_payload_buffer.push_back(payload_buffer[j] + 9 + i);
-			new_payload_length.push_back(payload_length[j] - (9 + i));
+			new_payload_buffer.push_back(payload_buffer[j] +  i);
+			new_payload_length.push_back(payload_length[j] -  i);
 
 		}
-		if (i == 34)
-		{
-			__asm
-			{
-				int 0x3;
-			}
-		}
+		//if (i == 34)
+		//{
+		//	__asm
+		//	{
+		//		int 0x3;
+		//	}
+		//}
 		auto root = getTreeStruct<Field>(new_payload_buffer, new_payload_length, 10);
 		root->display(0, root);
 
 	}
-	system("pause");
+	//system("pause");
 	exit(0);
 	printf("\n\n\n=============================\n");
 	cdf[files.size()] = packetno;
