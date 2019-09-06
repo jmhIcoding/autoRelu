@@ -9,7 +9,7 @@
 #include "n-gram.h"
 #include "tag_length_value.h"
 
-#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\tls\\cn.udacity.com\\"
+#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\realvnc\\editing_doc\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -59,7 +59,7 @@ int gather_payload(const _packet& packet)
 				//printf("%d,", udp.len - 8);
 				//print_payload(packet.data + sizeof(ethII_header)+4 * (ip.ver_ihl & 0xF) + 8, udp.len - 8);
 				//printf("\n");
-				return 0;
+				//return 0;
 				return packet.len - (udp.len - 8) ;
 				//return (int)packet.data + sizeof(ethII_header) + 4 * (ip.ver_ihl & 0xF) + 8;
 			}
@@ -76,12 +76,12 @@ int gather_payload(const _packet& packet)
 				DbgPrint(tcp_info, &tcp);
 				//printf("%d,", len);
 				//printf("\n");
-				if(packet.data[packet.len -len + 0]==0x16 && packet.data[packet.len -len +5]==0x01)
+				//if(packet.data[packet.len -len + 0]==0x16 && packet.data[packet.len -len +5]==0x01)
 					return packet.len - len ;
-				else
-				{
-					return 0;
-				}
+				//else
+				//{
+				//	return 0;
+				//}
 			}
 			/*
 			else if (len > 1460)
@@ -192,12 +192,12 @@ int main()
 	for (int i = 0; i <min(100,files.size()); i++)
 	{
 		char pcapname[256] = { 0 };
-		freopen("con", "w", stdout);
+		freopen("output.txt", "w", stdout);
 		sprintf(pcapname, "%s%s", PCAPDIR_, files[i].c_str());
 		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
 		
 		//read pcaps 
-		pcap_gather gather = pcap_gather(pcapname,"tcp and port 443");
+		pcap_gather gather = pcap_gather(pcapname,"host 47.100.21.91 and udp");
 		cdf[i] = packetno;
 		while (true)
 		{

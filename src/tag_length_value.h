@@ -133,6 +133,7 @@ struct Node<T> * getTreeStruct(const vector< unsigned char *> & payload_dataset,
 			{
 				if (i <= 1)
 					//一定不是一个tag,而且不可能是一个length部分
+					//但是有可能这个字节本身就一个长度
 				{
 					printf("This can not be a tag.\n");
 					break;
@@ -180,10 +181,12 @@ struct Node<T> * getTreeStruct(const vector< unsigned char *> & payload_dataset,
 							tag.copy(payload_dataset[j] + offset_getTS, i - 1);
 							tagNode->valueset.insert(tag);
 							new_payload_dataset.push_back(payload_dataset[j] + i + 1 + offset_getTS);
-							new_real_length.push_back((payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS]));
+							int new_len = (payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS]);
+							new_real_length.push_back(new_len);
 
 							follow_payload.push_back(payload_dataset[j] + i + 1 + payload_dataset[j][i - 1] * 256 + payload_dataset[j][i] + i + 1 + offset_getTS);
-							follow_real_length.push_back(real_length[j] - (payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS]+i+1+offset_getTS));
+							int fw_len = real_length[j] - (payload_dataset[j][i - 1 + offset_getTS] * 256 + payload_dataset[j][i + offset_getTS] + i + 1 + offset_getTS);
+							follow_real_length.push_back(fw_len);
 						}
 					}
 					Node<Field>* valNode = getTreeStruct(new_payload_dataset, new_real_length, thresholdValue);
@@ -196,6 +199,14 @@ struct Node<T> * getTreeStruct(const vector< unsigned char *> & payload_dataset,
 						{
 							followNode->type = NodeType::Follow;
 							valNode->sibling = followNode;
+						}
+					}
+					else
+					{
+						if (followNode)
+						{
+							followNode->type = NodeType::Follow;
+							lenNode->sibling = followNode;
 						}
 					}
 					Node<Field> * root = new Node<Field>();
