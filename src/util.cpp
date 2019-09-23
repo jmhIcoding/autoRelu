@@ -1,4 +1,9 @@
+#ifdef WIN32
 #include <util.h>
+#else
+#include "util.h"	
+#include <arpa/inet.h>
+#endif
 #ifdef DEBUG_INFO
 void DbgPrint(int level, void *header)
 {
@@ -39,12 +44,21 @@ void DbgPrint(int level, void *header)
 		break;
 	case ip_info:
 		//printf("IP");
+#ifdef WIN32
 		srcip.S_un.S_addr = ip_headerp->saddr;
 		dstip.S_un.S_addr = ip_headerp->daddr;
 		//sprintf(srcip_dot, "%s", inet_ntoa(srcip));
 		//sprintf(dstip_dot, "%s", inet_ntoa(dstip));
 		//dont parse ip addr to xx.yy.zz.aa
 		printf("%x,%x,", srcip.S_un.S_addr, dstip.S_un.S_addr);
+#else
+		srcip.s_addr = ip_headerp->saddr;
+		dstip.s_addr = ip_headerp->daddr;
+		//sprintf(srcip_dot, "%s", inet_ntoa(srcip));
+		//sprintf(dstip_dot, "%s", inet_ntoa(dstip));
+		//dont parse ip addr to xx.yy.zz.aa
+		printf("%x,%x,", srcip.s_addr, dstip.s_addr);	
+#endif
 		break;
 	default:
 		break;

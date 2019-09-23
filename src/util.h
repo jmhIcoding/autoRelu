@@ -8,22 +8,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef WIN32
 #include <pcap-stdinc.h>
+#endif
 #include <pcap.h>
+#ifdef WIN32
 #include <protocol.h>
+#else
+#include "protocol.h"
+#endif
+
 #include <vector>
 #include <set>
 #include <map>
-#include <openssl\x509.h>
-#include <openssl\x509v3.h>
-#include <openssl\bio.h>
-#include <openssl\bn.h>
-#include <openssl\x509_vfy.h>
-#include <openssl\pem.h>
-#include <string.h>
-#pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "openssl.lib")
-#pragma comment(lib, "libcrypto_static.lib")
+
 #pragma pack(1)
 
 

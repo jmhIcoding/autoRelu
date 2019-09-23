@@ -239,10 +239,6 @@ public:
 			if (p_cate == NULL || p_a == NULL)
 			{
 				printf("Cannot allocate more memory!!!\n");
-				__asm
-				{
-					int 0x3;
-				}
 			}
 			memset(p_cate, 0, sizeof(unsigned int)*allocate);
 			memset(p_a, 0, sizeof(unsigned int)*allocate);

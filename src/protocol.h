@@ -1,6 +1,8 @@
 #ifndef _APCAP_PROCOTOL_H
 #define _APCAP_PROCOTOL_H
+#ifdef WIN32
 #include <pcap-stdinc.h>
+#endif
 #include <vector>
 using namespace std;
 
