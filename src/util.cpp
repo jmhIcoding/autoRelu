@@ -80,9 +80,9 @@ pcap_gather::pcap_gather(char *pcapfilename)
 	this->pcapt = pcap_open_offline(pcapfilename, this->errBuf);
 	if (this->pcapt == NULL)
 	{
-		printf("Error when open pcap file. error is :%s\n",this->errBuf);
-		//system("pause");
-		//exit(-1);
+		printf("Error when open pcap file %s. error is :%s\n",pcapfilename,this->errBuf);
+		system("pause");
+		exit(-1);
 	}
 }
 

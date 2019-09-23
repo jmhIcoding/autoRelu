@@ -4,11 +4,14 @@
 #include "relu_reduction.h"
 #include "SuffixSearch.h"
 #include "Cluster.h"
-#define PCAPDIR "C:\\Users\\jmh081701\\Desktop\\80\\"
+#define CLASSID "mysql"
+#define PCAPDIR "C:\\Users\\dk\\Desktop\\temp\\pcap\\mysql\\"CLASSID"\\"
+#define PCAP_START 3
+#define PCAP_END 4
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
-float freq_threshold = 0.8;
+float freq_threshold = 0.5;
 
 void print_payload(unsigned char *data, int len)
 {
@@ -168,22 +171,25 @@ int main()
 	sprintf(PCAPDIR_, "%s\\*", PCAPDIR);
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
-	SuffixSearch search(0.1);
+	SuffixSearch search(freq_threshold);
 	StatisticCluster cluster(10);
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
 	vector< unsigned char *> payload_buffer;
 	vector<int >			payload_length;
+	char logfile[256] = { 0 };
+	sprintf(logfile, "frequent_segment_%s_%d-%d.log", CLASSID, PCAP_START, PCAP_END);
+	freopen(logfile, "w", stdout);
 	for (int i = 0; i <files.size(); i++)
 	{
 		char pcapname[256] = { 0 };
-		freopen("CON", "w", stdout);
+
 		sprintf(pcapname, "%s%s", PCAPDIR_, files[i].c_str());
 		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
 		
 		//read pcaps 
 		pcap_gather gather = pcap_gather(pcapname);
-		cdf[i] = packetno;
+		packetno = 0;
 		while (true)
 		{
 			_packet packet;
@@ -191,20 +197,18 @@ int main()
 			if (packet.data && packet.len)
 			{
 				//不同协议还需要解析
-				packetno++;
+				
 				int offset = gather_payload(packet);
 				if (offset)
 				{
-					//search.feed(packet.data + offset, packet.len - offset);
-					cluster.feed(packet.data + offset, packet.len - offset);
-					unsigned char * p = (unsigned char *)malloc(sizeof(char) * (packet.len - offset));
-					memcpy(p, packet.data + offset, packet.len - offset);
-					payload_buffer.push_back(p);
-					payload_length.push_back(packet.len - offset);
-				}
-				
-				//search.feed(packet.data, packet.len);
-				
+					if (!(packetno >= PCAP_START && packetno < PCAP_END))
+					{
+						break;
+					}
+					search.feed(packet.data + offset, packet.len - offset);
+					packetno++;
+					
+				}	
 			}
 			else
 			{
@@ -212,29 +216,8 @@ int main()
 			}
 		}
 	}
-	cdf[files.size()] = packetno;
-	//search.calc();
-	cluster.kmean();
-	for (int i = 0; i < cluster.clusters_id.size(); i++)
-	{
-		if (cluster.clusters_id[i].size())
-		{
-			SuffixSearch search(0.1);
-			for (auto it = cluster.clusters_id[i].begin(); it != cluster.clusters_id[i].end(); it++)
-			{
-				for (int j = 0; j < files.size(); j++)
-				{
-					if (*it >= cdf[j] && *it < cdf[j + 1])
-					{
-						printf("%s:%d\n", files[j].c_str(), *it - cdf[j] +1  );
-						search.feed(payload_buffer[*it],payload_length[*it]);
-						break;
-					}
-				}
-			}
-			search.calc();
-		}
-	}
+	search.calc();
+	freopen("CON", "w", stdout);
 	system("pause");
 	return 0;
 }

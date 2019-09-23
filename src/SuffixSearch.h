@@ -68,7 +68,7 @@ void calheight( unsigned  int *r,   int *sa, int n,  int * rank,  int *height)
 	for (k ? k-- : 0, j = sa[rank[i] - 1]; r[i + k] == r[j + k]; k++);
 	return;
 }
-int check(int tlen,char  *flag,  int *height,  int *cate,  int *sa,int len,int n,int threshold)
+int check(int tlen,int  *flag,  int *height,  int *cate,  int *sa,int len,int n,int threshold)
 {
 	int i, j, k, cnt;
 	i = j = 1;
@@ -100,7 +100,7 @@ int check(int tlen,char  *flag,  int *height,  int *cate,  int *sa,int len,int n
 	return 0;
 }
 
-void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold, unsigned int *a ,set< string > &pattern_strs,set< int> & pattern_start)
+void print(int tlen,  int *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold, unsigned int *a ,set< string > &pattern_strs,set< int> & pattern_start,int totalStr=0)
 {
 	if (tlen == 0)
 	{
@@ -142,8 +142,8 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 		{
 
 
-			for (k = 0; k<tlen; k++)
-				tmpStr[k] = a[sa[i] + k];
+			for (k = 0; k < tlen; k++)
+				tmpStr[k] = a[sa[i] + k] - 1;;
 			tmpStr[tlen] = 0;
 			char substr = 0;
 
@@ -156,18 +156,23 @@ void print(int tlen,  char *flag,   int *height,   int *cate,   int *sa, int len
 				}
 			}
 			if (substr == 0)
-			{
-			
+			{			
 				pattern_strs.insert(string(tmpStr,tlen));
 				pattern_start.insert(sa[i]);
-				printf("Occurance : %d\n", cnt);
+				printf("Occurance : %d/%d\n", cnt,totalStr);
+				printf("Length : %d\n", tlen);
+				printf("---------------------------------------------\n");
 				printf("Asiic Format:\n");
-				printf("%s", tmpStr);
+				//printf("%s", tmpStr);
+				for (int index = 0; index < tlen; index++)
+				{
+					printf("%c", tmpStr[index]);
+				}
 				printf("\nHex Format:\n");
 				for (int index = 0; index < tlen; index++)
 				{
 					unsigned char ch = tmpStr[index];
-					printf("0x%0.2X ",ch-1);
+					printf("0x%0.2X ",ch);
 				}
 				printf("\n===========================================\n");
 			}
@@ -286,8 +291,8 @@ public:
 			ws = (unsigned  int *)malloc(sizeof(unsigned int)*allocate);
 			memset(ws, 0, sizeof(unsigned int)* allocate);
 
-			flag = (char *)malloc(sizeof(char)*(n + 10));
-			memset(flag, 0, sizeof(char)* (n + 10));
+			flag = (int *)malloc(sizeof(int)*(n + 10));
+			memset(flag, 0, sizeof(int)* (n + 10));
 			//计算
 			a[--j] = 0;
 			len = j;
@@ -312,10 +317,11 @@ private:
 		}
 		ans = r;
 		//print(30, flag, height, cate, sa, len, n, threshold, a,pattern_str);
-		for (; ans > 10; ans--)
+
+		for (; ans >= 2; ans--)
 		{
-			//printf("%d.....\n", ans);//...
-			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str,pattern_start);
+			
+			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str,pattern_start,n);
 		}
 
 	}
@@ -330,11 +336,11 @@ private:
 	int *sa, *rank, *height, *cate;
 	unsigned int *wa, *wb, *wv, *ws, *a;
 	//sa[]:		后缀数组
-	//cate[] :  记录某种字符属于那个字符串
+	//cate[] :  记录某个字符属于那个字符串
 	//a[]	:	所有字符串会拼接在一起,字符串与字符串之间的分隔符使用 "up + 字符串id "隔开
-	//rank[] :名次数组
+	//rank[] :	名次数组
 	//height[] : 
-	char  *flag;//字符串的个数
+	int  *flag;//字符串的个数
 	
 	int allocate;
 	int used;
