@@ -61,8 +61,9 @@ int gather_payload(const _packet& packet)
 int main()
 {
 	char PCAPDIR_[230] = { 0 };
-	sprintf(PCAPDIR_, "%s", PCAPDIR);
+	sprintf(PCAPDIR_, "%s//", PCAPDIR);
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");//获取某个目录下的所的pcap文件
+	printf("Get %d files from %s\n",files.size(),PCAPDIR_);
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
 	SuffixSearch search(freq_threshold);			     //关键类
 	vector<int> cdf(files.size()+1, 0);
@@ -117,12 +118,12 @@ int main()
 		printf("Asiic Format:\n");
 		for (int index = 0; index < frequent_str[i].size(); index++)
 		{
-			printf("%c", frequent_str[i].c_str[index]);
+			printf("%c", frequent_str[i].c_str()[index]);
 		}
 		printf("\nHex Format:\n");
 		for (int index = 0; index < frequent_str[i].size(); index++)
 		{
-			unsigned char ch = frequent_str[i].c_str[index];
+			unsigned char ch = frequent_str[i].c_str()[index];
 			printf("0x%0.2X ",ch);
 		}
 		printf("\n===========================================\n");

@@ -52,13 +52,15 @@ vector<string> get_files_from_dir(char * basepath,char *filter=NULL)
 	}
 	else
 	{
-		while ((ptr=readdir(dir))==NULL)
+		while ((ptr=readdir(dir))!=NULL)
 		{
+			printf("%s\n",ptr->d_name);
 			if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
 				// filter .. and . directory.
 			{
 				continue;
 			}
+			
 			if (filter == NULL || strstr(ptr->d_name, filter) != NULL)
 			{
 				rst.push_back(ptr->d_name);
