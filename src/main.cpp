@@ -5,16 +5,18 @@
 #endif
 
 #include <time.h>
-#include "BaseTool.h"
-#include "SuffixSearch.h"
+#include "BaseTool.h"		//
+#include "SuffixSearch.h"	//包含这两个头文件
 #define CLASSID "mysql"
 #define PCAPDIR "/home/dk/"CLASSID""
 #define PCAP_START 0
 #define PCAP_END 1
 
-float freq_threshold = 0.5;
+float freq_threshold = 0.5;	//设置一个过滤阈值,表示把 N个数据包里面，出现次数超过freq_threshold * N 的字符子串提取出来,一个子串如果在一个数据包出现
+				//多次,那么只当做一次来统计。
 
 int gather_payload(const _packet& packet)
+				//这个函数在实际使用中可以不需要,只用于从pcap文件中提取数据包的载荷偏移量
 {
 	ethII_header eth = eth_parser(packet.data);
 
@@ -60,9 +62,9 @@ int main()
 {
 	char PCAPDIR_[230] = { 0 };
 	sprintf(PCAPDIR_, "%s", PCAPDIR);
-	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");
+	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");//获取某个目录下的所的pcap文件
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
-	SuffixSearch search(freq_threshold);
+	SuffixSearch search(freq_threshold);			     //关键类
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
 	vector< unsigned char *> payload_buffer;
@@ -95,7 +97,7 @@ int main()
 					{
 						break;
 					}
-					search.feed(packet.data + offset, packet.len - offset);
+					search.feed(packet.data + offset, packet.len - offset);//灌入载荷
 					packetno++;
 					
 				}	
