@@ -100,11 +100,11 @@ int check(int tlen,int  *flag,  int *height,  int *cate,  int *sa,int len,int n,
 	return 0;
 }
 
-void print(int tlen,  int *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold, unsigned int *a ,set< string > &pattern_strs,set< int> & pattern_start,int totalStr=0)
+void print(int tlen,  int *flag,   int *height,   int *cate,   int *sa, int len, int n, int threshold, unsigned int *a ,set< string > &pattern_strs,set< int> & pattern_start,vector<string> & patternStr,vector<int> & occrance, int totalStr = 0)
 {
 	if (tlen == 0)
 	{
-		printf("?\n");
+		//printf("?\n");
 		return;
 	}
 	int i, j, k, cnt;
@@ -159,22 +159,29 @@ void print(int tlen,  int *flag,   int *height,   int *cate,   int *sa, int len,
 			{			
 				pattern_strs.insert(string(tmpStr,tlen));
 				pattern_start.insert(sa[i]);
-				printf("Occurance : %d/%d\n", cnt,totalStr);
-				printf("Length : %d\n", tlen);
-				printf("---------------------------------------------\n");
-				printf("Asiic Format:\n");
-				//printf("%s", tmpStr);
-				for (int index = 0; index < tlen; index++)
-				{
-					printf("%c", tmpStr[index]);
-				}
-				printf("\nHex Format:\n");
-				for (int index = 0; index < tlen; index++)
-				{
-					unsigned char ch = tmpStr[index];
-					printf("0x%0.2X ",ch);
-				}
-				printf("\n===========================================\n");
+				occrance.push_back(cnt);
+				string str(tmpStr, tlen);
+				patternStr.push_back(str);
+				
+				
+				//Debug Info
+
+				//printf("Occurance : %d/%d\n", cnt,totalStr);
+				//printf("Length : %d\n", tlen);
+				//printf("---------------------------------------------\n");
+				//printf("Asiic Format:\n");
+				////printf("%s", tmpStr);
+				//for (int index = 0; index < tlen; index++)
+				//{
+				//	printf("%c", tmpStr[index]);
+				//}
+				//printf("\nHex Format:\n");
+				//for (int index = 0; index < tlen; index++)
+				//{
+				//	unsigned char ch = tmpStr[index];
+				//	printf("0x%0.2X ",ch);
+				//}
+				//printf("\n===========================================\n");
 			}
 		}
 		i = j;
@@ -261,7 +268,7 @@ public:
 		n++;
 		used += len1 + 1;
 	}
-	void calc()
+	int calc(vector<string>& patterns,vector<int>& occurence)
 	{
 		//ÉêÇë¸¨ÖúÄÚ´æ
 		if (n>1)
@@ -295,13 +302,13 @@ public:
 			threshold = n * fthreshold;
 			da(a, sa, len + 1, 300 + n, wa, wb, ws, wv);
 			calheight(a, sa, len, rank, height);
-			solve();
+			return solve(patterns,occurence);
 		}
 	}
 private:
-	void solve()
+	int solve(vector<string> & patterns,vector<int>& occurance)
 	{
-		int l, r, ans, mid;
+		int l, r, ans, mid,oldsize=occurance.size();
 		l = 0, r = mx;
 		while (l <= r)
 		{
@@ -312,14 +319,11 @@ private:
 				r = mid - 1;
 		}
 		ans = r;
-		//print(30, flag, height, cate, sa, len, n, threshold, a,pattern_str);
-
-		for (; ans >= 2; ans--)
+		for (; ans >= 1; ans--)
 		{
-			
-			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str,pattern_start,n);
+			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str,pattern_start,patterns,occurance,n);
 		}
-
+		return occurance.size()-oldsize;
 	}
 
 private:

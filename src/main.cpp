@@ -70,8 +70,6 @@ int main()
 	vector< unsigned char *> payload_buffer;
 	vector<int >			payload_length;
 	char logfile[256] = { 0 };
-	sprintf(logfile, "frequent_segment_%s_%d-%d.log", CLASSID, PCAP_START, PCAP_END);
-	freopen(logfile, "w", stdout);
 	for (int i = 0; i <files.size(); i++)
 	{
 		char pcapname[256] = { 0 };
@@ -108,8 +106,26 @@ int main()
 			}
 		}
 	}
-	search.calc();
-	freopen("CON", "w", stdout);
-	system("pause");
+	vector<string > frequent_str;
+	vector<int> occurance;
+	search.calc(frequent_str,occurance);
+	for (int i = 0; i < occurance.size(); i++)
+	{
+		printf("Occurance : %d/%d\n", occurance[i]);
+		printf("Length : %d\n", frequent_str[i].size());
+		printf("---------------------------------------------\n");
+		printf("Asiic Format:\n");
+		for (int index = 0; index < frequent_str[i].size(); index++)
+		{
+			printf("%c", frequent_str[i].c_str[index]);
+		}
+		printf("\nHex Format:\n");
+		for (int index = 0; index < frequent_str[i].size(); index++)
+		{
+			unsigned char ch = frequent_str[i].c_str[index];
+			printf("0x%0.2X ",ch);
+		}
+		printf("\n===========================================\n");
+	}
 	return 0;
 }
