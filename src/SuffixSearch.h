@@ -7,11 +7,13 @@
 #include <stdlib.h>
 #include <set>
 #include <string>
+#include "config.h"
 using namespace std;
 
 #define maxn (1460 * 10)
 #define maxPacket (1000)
 char tmpStr[1500];
+
 int cmp(unsigned int *r, int a, int b, int l)
 //×Ö·û´®±È½Ïº¯Êý
 {
@@ -308,6 +310,7 @@ public:
 private:
 	int solve(vector<string> & patterns,vector<int>& occurance)
 	{
+		extern int min_length_of_frequentstr;
 		int l, r, ans, mid,oldsize=occurance.size();
 		l = 0, r = mx;
 		while (l <= r)
@@ -319,7 +322,7 @@ private:
 				r = mid - 1;
 		}
 		ans = r;
-		for (; ans >= 1; ans--)
+		for (; ans >= min_length_of_frequentstr; ans--)
 		{
 			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str,pattern_start,patterns,occurance,n);
 		}

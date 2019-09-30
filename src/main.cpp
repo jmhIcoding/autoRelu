@@ -3,17 +3,14 @@
 #else
 #include "util.h"
 #endif
-
+#include "config.h"
 #include <time.h>
 #include "BaseTool.h"		//
 #include "SuffixSearch.h"	//包含这两个头文件
-#define CLASSID "mysql"
+#define CLASSID "weixin"
 #define PCAPDIR "/home/dk/"CLASSID""
 #define PCAP_START 0
 #define PCAP_END 1
-
-float freq_threshold = 0.5;	//设置一个过滤阈值,表示把 N个数据包里面，出现次数超过freq_threshold * N 的字符子串提取出来,一个子串如果在一个数据包出现
-				//多次,那么只当做一次来统计。
 
 int gather_payload(const _packet& packet)
 				//这个函数在实际使用中可以不需要,只用于从pcap文件中提取数据包的载荷偏移量
@@ -60,23 +57,30 @@ int gather_payload(const _packet& packet)
 }
 int main()
 {
+	extern const char * pcap_dir;
+	extern float freq_threshold;//设置一个过滤阈值,表示把 N个数据包里面，出现次数超过freq_threshold * N 的字符子串提取出来,一个子串如果在一个数据包出现
+							//多次,那么只当做一次来统计。
+	extern const char * output_file;
+
 	char PCAPDIR_[230] = { 0 };
-	sprintf(PCAPDIR_, "%s//", PCAPDIR);
+	sprintf(PCAPDIR_, "%s//", pcap_dir);
 	vector<string> files = get_files_from_dir(PCAPDIR_, ".pcap");//获取某个目录下的所的pcap文件
 	printf("Get %d files from %s\n",files.size(),PCAPDIR_);
 	PCAPDIR_[strlen(PCAPDIR_) - 1] = 0;
 	SuffixSearch search(freq_threshold);			     //关键类
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
+	int packetCnt= 0;
 	vector< unsigned char *> payload_buffer;
 	vector<int >			payload_length;
 	char logfile[256] = { 0 };
+	
 	for (int i = 0; i <files.size(); i++)
 	{
 		char pcapname[256] = { 0 };
 
 		sprintf(pcapname, "%s%s", PCAPDIR_, files[i].c_str());
-		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
+		printf("Loading pcaps...(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
 		
 		//read pcaps 
 		pcap_gather gather = pcap_gather(pcapname);
@@ -98,6 +102,7 @@ int main()
 					}
 					search.feed(packet.data + offset, packet.len - offset);//灌入载荷
 					packetno++;
+					packetCnt++;
 					
 				}	
 			}
@@ -110,9 +115,11 @@ int main()
 	vector<string > frequent_str;
 	vector<int> occurance;
 	search.calc(frequent_str,occurance);
+	printf("Analysing........\n");
+	freopen(output_file,"w",stdout);
 	for (int i = 0; i < occurance.size(); i++)
 	{
-		printf("Occurance : %d/%d\n", occurance[i]);
+		printf("Occurance : %d/%d\n", occurance[i],packetCnt);
 		printf("Length : %d\n", frequent_str[i].size());
 		printf("---------------------------------------------\n");
 		printf("Asiic Format:\n");
