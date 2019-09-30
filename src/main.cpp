@@ -9,7 +9,7 @@
 #include "n-gram.h"
 #include "tag_length_value.h"
 
-#define PCAPDIR "C:\\Users\\dk\\Desktop\\pcap\\realvnc\\editing_doc\\"
+#define PCAPDIR "C:\\Users\\dk\\Desktop\\targets\\"
 typedef void(*callback)(char *payload, int length);		//回调函数的函数指针
 
 Relu_Reduction relu;
@@ -188,16 +188,16 @@ int main()
 	vector<int> cdf(files.size()+1, 0);
 	int packetno = 0;
 	vector< unsigned char *> payload_buffer;
-	vector<unsigned int >			payload_length;
+	vector< int >			payload_length;
 	for (int i = 0; i <min(100,files.size()); i++)
 	{
 		char pcapname[256] = { 0 };
-		freopen("output.txt", "w", stdout);
+		//freopen("output.txt", "w", stdout);
 		sprintf(pcapname, "%s%s", PCAPDIR_, files[i].c_str());
 		printf("(%0.3f/100)\t%s\n", i*100.0 / files.size(), pcapname);
 		
 		//read pcaps 
-		pcap_gather gather = pcap_gather(pcapname,"host 47.100.21.91 and udp");
+		pcap_gather gather = pcap_gather(pcapname,"");
 		cdf[i] = packetno;
 		while (true)
 		{
@@ -229,9 +229,11 @@ int main()
 		}
 	}
 	//长度字段的搜索
-	//FindLengthField(payload_buffer, payload_length);
+	FindLengthField(payload_buffer, payload_length);
 	//计数器字段的搜索
-	//FindAccumulatorField(payload_buffer, payload_length);
+	FindAccumulatorField(payload_buffer, payload_length);
+	system("pause");
+	exit(0);
 	for (int i = 0; i < 1; i++)
 	{
 		printf("\n offset(i)==%d\n", i);

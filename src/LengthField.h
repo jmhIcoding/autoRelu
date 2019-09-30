@@ -91,8 +91,7 @@ void FindLengthField(const vector< unsigned char *> & payload_dataset, const vec
 					continue;
 				}
 				pair<float, pair <float, float> > rxy = person_sample_correlation_coefficient(fieldvalue_vector, length_vector);
-
-				if (abs(rxy.first) > 0.6 && abs(rxy.first) < 1.1)
+				if (abs(rxy.first) > 0.6  && abs(rxy.first) < 1.1)
 				{
 					printf("offset:%d,size:%d can be, coefficient :%0.5f, k:%0.5f,b:%0.5f,", offset, field_length, rxy.first, rxy.second.first, rxy.second.second);
 					if (little_end==1)
