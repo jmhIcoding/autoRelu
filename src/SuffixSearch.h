@@ -149,18 +149,18 @@ void print(int tlen,  int *flag,   int *height,   int *cate,   int *sa, int len,
 			tmpStr[tlen] = 0;
 			char substr = 0;
 
-			for (auto it = pattern_strs.begin(); it != pattern_strs.end() ; it++)
-			{
-				if (it->find(tmpStr, 0, tlen) != string::npos)
-				{
-					substr = 1;
-					break;
-				}
-			}
+			//for (auto it = pattern_strs.begin(); it != pattern_strs.end() ; it++)
+			//{
+			//	if (it->find(tmpStr, 0, tlen) != string::npos)
+			//	{
+			//		substr = 1;
+			//		break;
+			//	}
+			//}
 			if (substr == 0)
 			{			
 				pattern_strs.insert(string(tmpStr,tlen));
-				pattern_start.insert(sa[i]);
+				//pattern_start.insert(sa[i]);
 				occrance.push_back(cnt);
 				string str(tmpStr, tlen);
 				patternStr.push_back(str);
@@ -321,10 +321,45 @@ private:
 			else
 				r = mid - 1;
 		}
-		ans = r;
+		ans = r < max_length_of_frequentstr ? r : max_length_of_frequentstr;
 		for (; ans >= min_length_of_frequentstr; ans--)
 		{
 			print(ans, flag, height, cate, sa, len, n, threshold, a,pattern_str,pattern_start,patterns,occurance,n);
+		}
+		if (sort_by_length == false)
+			//按照出现频次排序
+			//使用桶排序
+		{
+			vector< vector <int> > base;
+			//最多有r-min_length_of_frequentstr个桶
+			vector<string> patterns_tmp;
+			vector<int> occurance_tmp;
+			for (int i = 0; i <= r; i++)
+			{
+				base.push_back({});
+			}
+			for (int i = 0; i < occurance.size(); i++)
+			{
+				base[occurance[i]].push_back(i);//base[j]={k1,k2,k3,k4}表示长度为j的特征串的下标为k1,k2,k3,k4
+			}
+			for (int i = r; i >= 0; i--)
+			{
+				for (int j = 0; j < base[i].size(); j++)
+				{
+					patterns_tmp.push_back(patterns[base[i][j]]);
+					occurance_tmp.push_back(occurance[base[i][j]]);
+				}
+			}
+			patterns.clear();
+			occurance.clear();
+
+			patterns = patterns_tmp;
+			occurance = occurance_tmp;
+		}
+		else
+			//默认按照特征串长度排序
+		{
+			;
 		}
 		return occurance.size()-oldsize;
 	}

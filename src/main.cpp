@@ -7,8 +7,6 @@
 #include <time.h>
 #include "BaseTool.h"		//
 #include "SuffixSearch.h"	//包含这两个头文件
-#define CLASSID "weixin"
-#define PCAPDIR "/home/dk/"CLASSID""
 #define PCAP_START 0
 #define PCAP_END 1
 

@@ -1,5 +1,5 @@
 all:
-	make -C /src/
-	cp /src/autorelu ./autorelu
+	make -C src/
+	cp ./src/autorule ./autorelu
 clean:
 	rm autorelu
